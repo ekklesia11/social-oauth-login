@@ -1,0 +1,14 @@
+# node_modules
+node_modules
+
+# package
+package-lock.json
+
+# .files
+.DS*
+
+# env
+.env
+
+# google auth json
+google-auth.json
