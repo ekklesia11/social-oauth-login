@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { LOCAL } from '../../constant/urls';
 import axios from 'axios';
-import authConfig from '../../github-auth.json';
+import authConfig from '../../kakao-auth.json';
 
 const router = Router();
 
@@ -9,10 +9,9 @@ const getAuthorizeUrl = () => {
   const authorizeUrl = authConfig.web.auth_uri + '?';
 
   const params = {
+    responseType: 'response_type=code',
     clientId: `client_id=${authConfig.web.client_id}`,
     redirectUri: `redirect_uri=${authConfig.web.redirect_uri}`,
-    scope: `scope=${authConfig.web.scope}`,
-    allowSignup: `allow_signup=${authConfig.web.allow_signup}`,
   };
   
   return authorizeUrl + Object.values(params).join('&');
@@ -22,8 +21,10 @@ const getAccessToken = async (code) => {
   const url = authConfig.web.token_uri;
   
   const body = {
+    grant_type: 'authorization_code',
     client_id: authConfig.web.client_id,
     client_secret: authConfig.web.client_secret,
+    redirect_uri: authConfig.web.redirect_uri,
     code
   };
 
@@ -36,10 +37,10 @@ const getAccessToken = async (code) => {
 }
 
 const getUserInfo = async (token) => {
-  const url = 'https://api.github.com/user';
-  const { data } = await axios.get(url, {
+  const url = 'https://kapi.kakao.com/v2/user/me';
+  const { data } = await axios.get(url + '?property_keys=kakao_account.email', {
     headers: {
-      Authorization: `token ${token}`
+      Authorization: `Bearer ${token}`
     }
   })
 
@@ -53,9 +54,9 @@ const getBearerToken = (auth) => {
   return splitAuth[1];
 }
 
-const redirectToGithubLogin = (res) => {
-  const githubLoginUrl = getAuthorizeUrl();
-  res.redirect(githubLoginUrl);
+const redirectToKakaoLogin = (res) => {
+  const kakaoLoginUrl = getAuthorizeUrl();
+  res.redirect(kakaoLoginUrl);
 }
 
 router.get('/login', async (req, res, err) => {
@@ -68,19 +69,19 @@ router.get('/login', async (req, res, err) => {
       const userInfo = await getUserInfo(token);
       console.log('user info:: ', userInfo);
       // TODO: check user info with database
-      const data = {
-        idCode: userInfo.id,
-        name: userInfo.name,
-        id: userInfo.login,
-      };
+      // const data = {
+      //   idCode: userInfo.id,
+      //   name: userInfo.name,
+      //   id: userInfo.login,
+      // };
 
-      res.send(data);
+      // res.send(data);
     } else {
       throw 'NO TOKEN'
     }
   } catch (e) {
     console.log(e);
-    redirectToGithubLogin(res);
+    redirectToKakaoLogin(res);
   }
 });
 
@@ -88,12 +89,16 @@ router.get('/auth/callback', async (req, res, err) => {
   const code = req.query.code;
 
   if (code) {
-    const tokenInfo = await getAccessToken(code);
-    console.log('token info:: ', tokenInfo)
-    const userInfo = await getUserInfo(tokenInfo.access_token);
-    // TODO: save user info into database
-
-    res.redirect(LOCAL);
+    try {
+      const tokenInfo = await getAccessToken(code);
+      console.log('token info:: ', tokenInfo)
+      // const userInfo = await getUserInfo(tokenInfo.access_token);
+      // TODO: save user info into database
+  
+      // res.redirect(LOCAL);
+    } catch (e) {
+      console.error(e);
+    }
   } else {
     res.send('no code');
   }
