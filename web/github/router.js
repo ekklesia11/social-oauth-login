@@ -6,7 +6,7 @@ import axios from 'axios';
 const router = Router();
 
 const getAuthorizeUrl = () => {
-  const authorizeUrl = 'https://github.com/login/oauth/authorize?';
+  const authorizeUrl = authConfig.web.auth_uri + '?';
 
   const params = {
     clientId: `client_id=${authConfig.web.client_id}`,

@@ -13,3 +13,4 @@ package-lock.json
 # auth json
 google-auth.json
 github-auth.json
+kakao-auth.json
