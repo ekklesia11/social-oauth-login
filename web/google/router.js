@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import authConfig from '../../google-auth.json';
+import { LOCAL } from '../../constant/urls';
 
 const router = Router();
 
@@ -92,7 +93,7 @@ router.get('/auth/callback', async (req, res, err) => {
     // TODO: save user info into database
 
     if (!credentials) throw 'token is not valid!!'
-    res.redirect('http://localhost:5001');
+    res.redirect(LOCAL);
   } catch (e) {
     console.error(e);
     redirectToGoogleLogin(client, res);

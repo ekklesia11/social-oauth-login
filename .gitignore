@@ -10,5 +10,6 @@ package-lock.json
 # env
 .env
 
-# google auth json
+# auth json
 google-auth.json
+github-auth.json
