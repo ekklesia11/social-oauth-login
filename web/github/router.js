@@ -69,9 +69,9 @@ router.get('/login', async (req, res, err) => {
       console.log('user info:: ', userInfo);
       // TODO: check user info with database
       const data = {
-        idCode: userInfo.id,
+        id: userInfo.id,
         name: userInfo.name,
-        id: userInfo.login,
+        githubLoginId: userInfo.login,
       };
 
       res.send(data);

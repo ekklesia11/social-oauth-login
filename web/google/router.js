@@ -57,6 +57,11 @@ router.get('/login', async (req, res, err) => {
     if (token) {
       const ticketPayload = await verifyIdToken(client, token);
       // TODO: check user details with verified info in the database
+      const data = {
+        email: ticketPayload.email,
+        name: ticketPayload.name,
+        picture: ticketPayload.picture
+      }
       res.send(ticketPayload);
     } else {
       throw 'NO TOKEN';
@@ -90,6 +95,7 @@ router.get('/auth/callback', async (req, res, err) => {
 
     client.setCredentials(tokenInfo);
     const { credentials } = client;
+    console.log(credentials);
     // TODO: save user info into database
 
     if (!credentials) throw 'token is not valid!!'

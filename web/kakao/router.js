@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { LOCAL } from '../../constant/urls';
 import axios from 'axios';
+import qs from 'qs';
 import authConfig from '../../kakao-auth.json';
 
 const router = Router();
@@ -28,19 +29,21 @@ const getAccessToken = async (code) => {
     code
   };
 
-  const { data } = await axios.post(url, body, {
+  const { data } = await axios.post(url, qs.stringify(body), {
     headers: {
-      Accept: 'application/json'
+      'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
     }
   });
+
   return data;
 }
 
 const getUserInfo = async (token) => {
   const url = 'https://kapi.kakao.com/v2/user/me';
-  const { data } = await axios.get(url + '?property_keys=kakao_account.email', {
+  const { data } = await axios.get(url, {
     headers: {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
+      'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
     }
   })
 
@@ -69,13 +72,16 @@ router.get('/login', async (req, res, err) => {
       const userInfo = await getUserInfo(token);
       console.log('user info:: ', userInfo);
       // TODO: check user info with database
-      // const data = {
-      //   idCode: userInfo.id,
-      //   name: userInfo.name,
-      //   id: userInfo.login,
-      // };
+      const data = {
+        id: userInfo.id,
+        name: userInfo.properties.nickname,
+        email: userInfo.kakao_account.email,
+        age: userInfo.kakao_account.age_range,
+        birthday: userInfo.kakao_account.birthday,
+        gender: userInfo.kakao_account.gender
+      };
 
-      // res.send(data);
+      res.send(data);
     } else {
       throw 'NO TOKEN'
     }
@@ -92,10 +98,11 @@ router.get('/auth/callback', async (req, res, err) => {
     try {
       const tokenInfo = await getAccessToken(code);
       console.log('token info:: ', tokenInfo)
-      // const userInfo = await getUserInfo(tokenInfo.access_token);
+      const userInfo = await getUserInfo(tokenInfo.access_token);
+      console.log('user info:: ', userInfo);
       // TODO: save user info into database
   
-      // res.redirect(LOCAL);
+      res.redirect(LOCAL);
     } catch (e) {
       console.error(e);
     }
