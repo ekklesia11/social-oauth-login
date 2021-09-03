@@ -62,7 +62,8 @@ router.get('/login', async (req, res, err) => {
         name: ticketPayload.name,
         picture: ticketPayload.picture
       }
-      res.send(ticketPayload);
+      
+      res.send(data);
     } else {
       throw 'NO TOKEN';
     }
